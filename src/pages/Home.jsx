@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import PageElement from "../components/PageElement.jsx";
 import { Input, InputGroup, Button } from "reactstrap";
 import {
   getTodos,
@@ -15,20 +16,26 @@ function Home() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState("");
   const inputEle = useRef(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  const getData = async () => {
-    setLoading(true);
-    try {
-      const response = await getTodos();
-      setTodos(response.data);
-    } catch (error) {
-      console.log(`fetch Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //Logic for Todos in current page
+  const indexLastTodo = currentPage * itemsPerPage;
+  const indexFirstTodo = indexLastTodo - itemsPerPage;
+  const currentTodos = todos.slice(indexFirstTodo, indexLastTodo);
 
   useEffect(() => {
+    const getData = async () => {
+      setLoading(true);
+      try {
+        const response = await getTodos();
+        setTodos(response.data);
+      } catch (error) {
+        console.log(`fetch Error: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
     getData();
   }, []);
 
@@ -43,6 +50,7 @@ function Home() {
       setTodos([...todos, response.data]);
       setInputValue("");
       setInputTitle("");
+      if (currentTodos.length === 5) setCurrentPage((prev) => prev + 1);
     } catch (error) {
       console.log(`Error adding todo: ${error.message}`);
     }
@@ -99,11 +107,15 @@ function Home() {
     try {
       const response = await deleteTodo(id);
       setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
+      todos.length > 4 && currentTodos.length === 1
+        ? setCurrentPage((prev) => prev - 1)
+        : null;
     } catch (error) {
       console.log(`Error deleting todo: ${error.message}`);
     }
   };
 
+  // console.log(currentItems.length);
   const handleEdit = (id) => {
     const todoToUpdate = todos.find((todo) => todo._id === id);
     if (todoToUpdate) {
@@ -125,7 +137,7 @@ function Home() {
 
   return (
     <>
-      <div className="container d-flex  align-items-center flex-column mb-3 pt-5 vh-100">
+      <div className="container d-flex  align-items-center       flex-column mb-3 pt-5 vh-100">
         <div className="col-12 col-md-8 py-2">
           <InputGroup className="w-100">
             <Input
@@ -154,14 +166,14 @@ function Home() {
             )}
           </InputGroup>
         </div>
-        <div className="col-12 col-md-8 mt-2">
+        <div className="col-12 col-md-8 mt-2 h-50">
           <ul className="list-group w-100">
             {loading ? (
               <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             ) : todos.length > 0 ? (
-              todos.map((todo) => (
+              currentTodos.map((todo) => (
                 <li
                   className="list-group-item text-bg-secondary d-flex justify-content-between align-items-center mb-2"
                   key={todo._id}
@@ -209,6 +221,14 @@ function Home() {
             )}
           </ul>
         </div>
+        {todos.length > 0 ? (
+          <PageElement
+            currentPage={currentPage}
+            totalTodos={todos.length}
+            itemsPerPage={itemsPerPage}
+            setCurrentPage={setCurrentPage}
+          />
+        ) : null}
       </div>
     </>
   );
