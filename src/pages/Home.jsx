@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import PageElement from "../components/PageElement.jsx";
-import { Input, InputGroup, Button } from "reactstrap";
+import { Form, InputGroup, Button } from "react-bootstrap";
+
 import {
   getTodos,
   createTodo,
@@ -17,6 +18,7 @@ function Home() {
   const [editingId, setEditingId] = useState("");
   const inputEle = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isToast, setIsToast] = useState(false);
   const itemsPerPage = 5;
 
   //Logic for Todos in current page
@@ -99,17 +101,25 @@ function Home() {
     }
   };
 
+  const clearTime = () => {
+    setTimeout(() => {
+      setIsToast(false);
+    }, 1000);
+  };
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this todo?",
     );
     if (!confirmDelete) return;
     try {
-      const response = await deleteTodo(id);
+      await deleteTodo(id);
       setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
       todos.length > 4 && currentTodos.length === 1
         ? setCurrentPage((prev) => prev - 1)
         : null;
+      setIsToast(true);
+      clearTime();
     } catch (error) {
       console.log(`Error deleting todo: ${error.message}`);
     }
@@ -137,16 +147,21 @@ function Home() {
 
   return (
     <>
+      {isToast ? (
+        <h3 className="text-danger position-absolute z-1 m-3 start-50">
+          Todo Deleted
+        </h3>
+      ) : null}
       <div className="container d-flex  align-items-center       flex-column mb-3 pt-5 vh-100">
         <div className="col-12 col-md-8 py-2">
           <InputGroup className="w-100">
-            <Input
+            <Form.Control
               placeholder={inputTitle || "Enter a new title..."}
               value={inputTitle}
               onChange={(e) => setInputTitle(e.target.value)}
-              innerRef={inputEle}
+              ref={inputEle}
             />
-            <Input
+            <Form.Control
               placeholder={inputValue || "Enter a new todo..."}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}

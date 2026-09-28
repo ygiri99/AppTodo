@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Pagination, PaginationItem, PaginationLink } from "reactstrap";
+import { Pagination } from "react-bootstrap";
 
 const PageElement = ({
   currentPage,
@@ -19,46 +18,46 @@ const PageElement = ({
   const paginationItems = [];
   for (let number = 1; number <= totalPages; number++) {
     paginationItems.push(
-      <PaginationItem
+      <Pagination.Item
         key={number}
         active={number === currentPage}
         onClick={() => handlePageChange(number)}
       >
-        <PaginationLink>{number}</PaginationLink>
-      </PaginationItem>,
+        {number}
+      </Pagination.Item>,
     );
   }
 
   return (
     <div className="d-flex justify-content-center">
       <Pagination>
-        <PaginationLink
+        <Pagination.Item
           onClick={() => handlePageChange(1)}
           disabled={currentPage === 1}
         >
           First
-        </PaginationLink>
-        <PaginationLink
+        </Pagination.Item>
+        <Pagination.Item
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
           Prev
-        </PaginationLink>
+        </Pagination.Item>
         {paginationItems}
-        <PaginationLink
+        <Pagination.Item
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
         >
           Next
-        </PaginationLink>
-        <PaginationLink
+        </Pagination.Item>
+        <Pagination.Item
           onClick={() => {
             handlePageChange(totalPages);
           }}
           disabled={currentPage === totalPages}
         >
           Last
-        </PaginationLink>
+        </Pagination.Item>
       </Pagination>
     </div>
   );
